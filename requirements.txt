@@ -1,0 +1,30 @@
+# LLM Training from Scratch - Requirements
+
+# Core ML Framework
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+
+# Tokenization
+sentencepiece>=0.1.99
+
+# Data Processing
+numpy>=1.24.0
+tqdm>=4.65.0
+
+# Optional: GGUF export
+# gguf>=0.1.0
+
+# Optional: Weights & Biases logging
+# wandb>=0.15.0
+
+# Optional: TensorBoard
+# tensorboard>=2.12.0
+
+# Optional: HuggingFace Transformers (for reference implementations)
+# transformers>=4.30.0
+
+# Development
+pytest>=7.0.0
+black>=23.0.0
+flake8>=6.0.0
