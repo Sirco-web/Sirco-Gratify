@@ -29,10 +29,13 @@ from model import GratifyLLM
 class TextDataset(Dataset):
     """Dataset for text files."""
     
-    def __init__(self, file_path, seq_length=512, tokenizer_fn=None):
+    def __init__(self, file_path=None, seq_length=512, tokenizer_fn=None, text=None):
         """Load text file and prepare data."""
-        with open(file_path, "r", encoding="utf-8") as f:
-            self.text = f.read()
+        if text is None:
+            with open(file_path, "r", encoding="utf-8") as f:
+                self.text = f.read()
+        else:
+            self.text = text
         
         self.seq_length = seq_length
         self.tokenizer_fn = tokenizer_fn or self.char_tokenize
@@ -206,11 +209,9 @@ def setup_training(args):
     
     # Create dataset
     dataset = TextDataset(
-        file_path=None,
         seq_length=config.max_seq_length,
+        text=training_text
     )
-    dataset.text = training_text
-    dataset.tokens = dataset.char_tokenize(training_text)
     
     # Update vocab size based on actual characters
     unique_tokens = len(set(dataset.tokens))
