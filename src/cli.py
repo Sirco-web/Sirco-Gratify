@@ -254,7 +254,9 @@ class GratifyChat:
                 
                 # Check for builtin prompt
                 lower_input = user_input.lower()
-                if "what are you" in lower_input or "who are you" in lower_input:
+                if "what are you" in lower_input:
+                    response = SYSTEM_BRAND['name']  # Just "Gratify"
+                elif "who are you" in lower_input:
                     response = f"I am {SYSTEM_BRAND['name']} by {SYSTEM_BRAND['author']}"
                 else:
                     # Generate response
