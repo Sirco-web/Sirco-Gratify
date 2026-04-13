@@ -119,7 +119,7 @@ def test_data():
     """Test if training data exists."""
     print("\n📚 Testing training data...")
     try:
-        data_dir = Path(__file__).parent / "data"
+        data_dir = Path(__file__).parent / "data" / "md"
         md_files = list(data_dir.glob("*.md"))
         
         if md_files:
