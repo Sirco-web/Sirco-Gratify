@@ -88,16 +88,28 @@ Your files are organized like this:
 
 ```
 data/
-├── md/                    ← TRAINING DATA (read-only)
-│   ├── debugging_guide.md ✅ Already provided
-│   ├── code_patterns.md   ✅ Already provided
-│   ├── common_bugs.md     ✅ Already provided
-│   ├── apis_web.md        ✅ Already provided
-│   └── data_structures.md ✅ Already provided
+├── md/                    ← TRAINING DATA (18 files, 121KB)
+│   ├── advanced_debugging.md     ✅ Memory leaks, race conditions
+│   ├── apis_web.md              ✅ REST API design
+│   ├── api_security.md          ✅ Rate limiting, CORS, webhooks
+│   ├── code_patterns.md         ✅ Python patterns
+│   ├── code_review.md           ✅ Review best practices
+│   ├── common_bugs.md           ✅ Common mistakes
+│   ├── concurrency.md           ✅ Threading, async/await
+│   ├── cryptography.md          ✅ Encryption, hashing
+│   ├── cybersecurity.md         ✅ OWASP Top 10
+│   ├── database_security.md     ✅ SQL injection, backups
+│   ├── data_structures.md       ✅ Data structure patterns
+│   ├── debugging_guide.md       ✅ Debugging basics
+│   ├── design_patterns.md       ✅ 13+ design patterns
+│   ├── devops.md                ✅ Docker, K8s, CI/CD
+│   ├── error_handling.md        ✅ Exception handling
+│   ├── performance.md           ✅ Optimization
+│   ├── testing.md               ✅ Testing strategies
+│   └── web_development.md       ✅ Frontend/backend
 │
-└── finetune/              ← YOUR CONVERSATION DATA HERE
-    ├── EXAMPLE.md         ← See example format
-    └── (add your data here)
+└── finetune/              ← CONVERSATION FINE-TUNING DATA
+    └── comprehensive_chat.md    ✅ 1,450+ lines of chat examples
 ```
 
 **The training script will:**
