@@ -64,10 +64,12 @@ def finetune_model(
     
     # Load fine-tuning data
     if data_dir is None:
-        data_dir = DATA_DIR
+        finetune_data_dir = Path(DATA_DIR) / "finetune"
+    else:
+        finetune_data_dir = Path(data_dir)
     
-    print(f"\n📚 Loading fine-tuning data from: {data_dir}")
-    training_text = load_training_data(data_dir)
+    print(f"\n📚 Loading fine-tuning data from: {finetune_data_dir}")
+    training_text = load_training_data(finetune_data_dir)
     
     if training_text is None:
         print("❌ No training data found!")

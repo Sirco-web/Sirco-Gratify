@@ -164,7 +164,11 @@ class Trainer:
 
 def load_training_data(data_dir):
     """Load all markdown files from data directory."""
-    md_files = list(data_dir.glob("*.md"))
+    md_folder = Path(data_dir) / "md"  # Look in data/md/ subfolder
+    if not md_folder.exists():
+        md_folder = Path(data_dir)  # Fallback to data/ root
+    
+    md_files = list(md_folder.glob("*.md"))
     
     if not md_files:
         print(f"⚠️  No .md files found in {data_dir}")
