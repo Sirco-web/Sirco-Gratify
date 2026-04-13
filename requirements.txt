@@ -1,30 +1,19 @@
-# LLM Training from Scratch - Requirements
+# Gratify LLM - Requirements
 
-# Core ML Framework
-torch>=2.0.0
-torchvision>=0.15.0
+# Core dependencies
+numpy>=1.24.0
+torch>=2.0.0  # Will be upgraded for GPU in setup if needed
 torchaudio>=2.0.0
 
-# Tokenization
-sentencepiece>=0.1.99
+# Optional GPU support (uncomment as needed):
+# For NVIDIA CUDA: torch==2.1.1+cu121 (install via installation script)
+# For AMD ROCm: torch==2.1.1+rocm5.7 
+# For Apple Metal: torch==2.1.1
 
-# Data Processing
-numpy>=1.24.0
+# Development and utilities
+colorama>=0.4.6
 tqdm>=4.65.0
 
-# Optional: GGUF export
-# gguf>=0.1.0
-
-# Optional: Weights & Biases logging
-# wandb>=0.15.0
-
-# Optional: TensorBoard
-# tensorboard>=2.12.0
-
-# Optional: HuggingFace Transformers (for reference implementations)
-# transformers>=4.30.0
-
-# Development
-pytest>=7.0.0
-black>=23.0.0
-flake8>=6.0.0
+# Notebook support (optional)
+jupyter>=1.0.0
+ipython>=8.0.0

@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+.Python
+.venv
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+.env
+
+# PyTorch/ML
+*.pt
+*.pth
+*.ckpt
+checkpoints/*.pt
+!checkpoints/.gitkeep
+
+# Data (too large)
+data/*.md
+!data/README.md
+!data/sample.md
+user_data/
+logs/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temp
+*.tmp
+*.temp
+.*.swp
