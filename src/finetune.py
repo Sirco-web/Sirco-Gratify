@@ -14,13 +14,13 @@ from torch.utils.data import DataLoader
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from src.gpu_utils import setup_gpu_if_available, get_device_string
-from src.config import (
-    GratifyConfig, SystemConfig, DATA_DIR, CHECKPOINTS_DIR, 
-    get_latest_checkpoint, increment_checkpoint_version
+from gpu_utils import setup_gpu_if_available, get_device_string
+from config import (
+    GratifyConfig, SystemConfig, DATA_DIR, CHECKPOINTS_DIR,
+    get_latest_checkpoint, increment_checkpoint_version,
 )
-from src.model import GratifyLLM
-from src.train import TextDataset, Trainer, load_training_data
+from model import GratifyLLM
+from train import TextDataset, Trainer, load_training_data
 
 
 def finetune_model(
