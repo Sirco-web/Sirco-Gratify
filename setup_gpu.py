@@ -175,8 +175,21 @@ def detect_gpu(sysinfo: SystemInfo) -> GpuInfo:
     return GpuInfo(vendor=None, name=None)
 
 
-def pip_install(pkgs: list[str], extra_index_url: str | None = None, description: str | None = None) -> bool:
+def pip_install(
+    pkgs: list[str],
+    extra_index_url: str | None = None,
+    description: str | None = None,
+    upgrade: bool = False,
+    force_reinstall: bool = False,
+    no_cache_dir: bool = False,
+) -> bool:
     cmd: list[str] = [sys.executable, "-m", "pip", "install"]
+    if upgrade:
+        cmd.append("--upgrade")
+    if force_reinstall:
+        cmd.append("--force-reinstall")
+    if no_cache_dir:
+        cmd.append("--no-cache-dir")
     if extra_index_url:
         cmd += ["--index-url", extra_index_url]
     cmd += pkgs
@@ -192,14 +205,25 @@ def install_pytorch_for_gpu(sysinfo: SystemInfo, gpu: GpuInfo) -> None:
         print("\nNVIDIA detected: installing CUDA-enabled PyTorch wheels (bundled CUDA runtime).")
         # Default to cu121 which is widely supported; torch will bundle CUDA runtime.
         # If a user has a very new driver, cu121 still typically works.
+        # If a CPU-only torch is already installed, pip often keeps it because versions can look "satisfied".
+        # Force reinstall from the CUDA index.
         ok = pip_install(
             ["torch", "torchvision", "torchaudio"],
             extra_index_url="https://download.pytorch.org/whl/cu121",
             description="Installing PyTorch (CUDA, cu121)",
+            upgrade=True,
+            force_reinstall=True,
+            no_cache_dir=True,
         )
         if not ok:
             print("PyTorch CUDA install failed; falling back to CPU wheels.")
-            ok2 = pip_install(["torch", "torchvision", "torchaudio"], description="Installing PyTorch (CPU fallback)")
+            ok2 = pip_install(
+                ["torch", "torchvision", "torchaudio"],
+                description="Installing PyTorch (CPU fallback)",
+                upgrade=True,
+                force_reinstall=True,
+                no_cache_dir=True,
+            )
             if not ok2:
                 raise RuntimeError("Failed to install PyTorch (CUDA and CPU fallback).")
         return
@@ -211,23 +235,36 @@ def install_pytorch_for_gpu(sysinfo: SystemInfo, gpu: GpuInfo) -> None:
             ["torch", "torchvision", "torchaudio"],
             extra_index_url="https://download.pytorch.org/whl/rocm6.0",
             description="Installing PyTorch (ROCm 6.0)",
+            upgrade=True,
+            force_reinstall=True,
+            no_cache_dir=True,
         )
         if not ok:
             print("ROCm install failed; falling back to CPU wheels.")
-            ok2 = pip_install(["torch", "torchvision", "torchaudio"], description="Installing PyTorch (CPU fallback)")
+            ok2 = pip_install(
+                ["torch", "torchvision", "torchaudio"],
+                description="Installing PyTorch (CPU fallback)",
+                upgrade=True,
+                force_reinstall=True,
+                no_cache_dir=True,
+            )
             if not ok2:
                 raise RuntimeError("Failed to install PyTorch (ROCm and CPU fallback).")
         return
 
     if gpu.vendor == "apple":
         print("\nApple GPU detected: installing standard PyTorch (uses MPS on supported Macs).")
-        ok = pip_install(["torch", "torchvision", "torchaudio"], description="Installing PyTorch (macOS / MPS)")
+        ok = pip_install(
+            ["torch", "torchvision", "torchaudio"],
+            description="Installing PyTorch (macOS / MPS)",
+            upgrade=True,
+        )
         if not ok:
             raise RuntimeError("Failed to install PyTorch on macOS.")
         return
 
     print("\nInstalling CPU-only PyTorch (no GPU backend detected).")
-    ok = pip_install(["torch", "torchvision", "torchaudio"], description="Installing PyTorch (CPU)")
+    ok = pip_install(["torch", "torchvision", "torchaudio"], description="Installing PyTorch (CPU)", upgrade=True)
     if not ok:
         raise RuntimeError("Failed to install PyTorch (CPU).")
 
@@ -244,7 +281,7 @@ def print_driver_guidance(sysinfo: SystemInfo, gpu: GpuInfo) -> None:
         print("- This script focuses on getting a working PyTorch GPU stack; it does not install Windows display drivers.")
 
 
-def verify_installation() -> None:
+def verify_installation(expected_gpu_vendor: Optional[str] = None) -> None:
     print("\n" + "=" * 60)
     print("Verifying installation...")
     print("=" * 60)
@@ -282,6 +319,24 @@ print(f"Sanity matmul device: {y.device}")
     if result.stderr.strip():
         print("Warnings/Errors:")
         print(result.stderr)
+
+    # If we detected NVIDIA, require a CUDA build + runtime availability.
+    if expected_gpu_vendor == "nvidia":
+        # CUDA build wheels show +cuXXX in __version__ and torch.version.cuda is set.
+        # torch.cuda.is_available() requires a working NVIDIA driver.
+        # We assert both to avoid "installed CUDA index but kept +cpu build".
+        if "+cu" not in result.stdout and "torch.version.cuda: None" in result.stdout:
+            raise RuntimeError(
+                "NVIDIA GPU detected but PyTorch is a CPU build.\n"
+                "Fix by forcing reinstall from CUDA wheels:\n"
+                "  python -m pip install --upgrade --force-reinstall --no-cache-dir "
+                "torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121"
+            )
+        if "CUDA available: False" in result.stdout:
+            raise RuntimeError(
+                "PyTorch CUDA build installed, but CUDA is not available at runtime.\n"
+                "This usually means the NVIDIA driver isn't installed/working (or needs a reboot)."
+            )
 
 
 def main():
@@ -325,7 +380,7 @@ def main():
     print("=" * 60)
 
     try:
-        verify_installation()
+        verify_installation(expected_gpu_vendor=gpu.vendor)
     except RuntimeError as e:
         print(str(e))
         sys.exit(1)
