@@ -38,7 +38,8 @@ def finetune_model(
     
     # Setup GPU
     print("\n🔧 Checking GPU support...")
-    setup_gpu_if_available()
+    # Fine-tuning must NOT install or modify dependencies (including GPU/CUDA).
+    setup_gpu_if_available(install=False)
     device = torch.device(get_device_string())
     print(f"📍 Using device: {device}")
     

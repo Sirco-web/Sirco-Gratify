@@ -100,8 +100,8 @@ def install_gpu_dependencies(gpu_type):
         print("✅ Metal dependencies installed!")
 
 
-def setup_gpu_if_available():
-    """Check for GPU and install dependencies if available."""
+def setup_gpu_if_available(install: bool = False):
+    """Check for GPU and optionally install GPU dependencies."""
     gpu_info = detect_gpu()
     
     if gpu_info["available"]:
@@ -109,8 +109,12 @@ def setup_gpu_if_available():
         print(f"   Devices: {gpu_info['device_count']}")
         if gpu_info["compute_capability"]:
             print(f"   Compute Capability: {gpu_info['compute_capability']}")
-        
-        install_gpu_dependencies(gpu_info["type"])
+
+        if install:
+            install_gpu_dependencies(gpu_info["type"])
+        else:
+            print("ℹ️  Dependency installation is disabled for this run.")
+            print("   This script will only use whatever torch backend is already installed.")
         return True
     else:
         print("\n⚠️  No GPU detected. Using CPU mode.")

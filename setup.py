@@ -42,7 +42,7 @@ def setup_gpu():
         return False
     
     # Install GPU dependencies
-    setup_gpu_if_available()
+    setup_gpu_if_available(install=True)
     return True
 
 

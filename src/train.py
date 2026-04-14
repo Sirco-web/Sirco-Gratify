@@ -195,7 +195,8 @@ def setup_training(args):
     
     # GPU setup
     print("\n🔧 Checking GPU support...")
-    gpu_available = setup_gpu_if_available()
+    # Training must NOT install or modify dependencies (including GPU/CUDA).
+    gpu_available = setup_gpu_if_available(install=False)
     device = torch.device(get_device_string())
     print(f"📍 Using device: {device}")
     
