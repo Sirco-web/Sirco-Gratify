@@ -53,6 +53,33 @@ class GpuInfo:
     details: Optional[str] = None
 
 
+def require_supported_python(gpu: GpuInfo) -> None:
+    """
+    PyTorch GPU wheels often lag behind the newest Python versions.
+    If the interpreter is too new, pip will report "No matching distribution found".
+    """
+    major, minor = sys.version_info[:2]
+
+    # Conservative bounds:
+    # - PyTorch typically supports up to Python 3.12 promptly; 3.13/3.14 may not have wheels yet.
+    # - CUDA/ROCm wheels are even stricter.
+    if major == 3 and minor <= 12:
+        return
+
+    if gpu.vendor in {"nvidia", "amd", "apple"}:
+        raise RuntimeError(
+            f"Unsupported Python for GPU wheels: {major}.{minor}.\n"
+            "Install 64-bit Python 3.12 (recommended) or 3.11, recreate the venv, then rerun.\n"
+            "On Windows:\n"
+            "  1) Install Python 3.12 (x64)\n"
+            "  2) Delete venv and recreate:\n"
+            "     rmdir /s /q venv\n"
+            "     py -3.12 -m venv venv\n"
+            "     venv\\Scripts\\python.exe -m pip install -U pip\n"
+            "  3) Run: python setup_gpu.py"
+        )
+
+
 def in_venv() -> bool:
     # Works for venv/virtualenv.
     return getattr(sys, "base_prefix", sys.prefix) != sys.prefix
@@ -350,6 +377,8 @@ def main():
     ensure_venv(sysinfo)
 
     gpu = detect_gpu(sysinfo)
+
+    require_supported_python(gpu)
 
     print("\nUpgrading pip...")
     run_command([sys.executable, "-m", "pip", "install", "--upgrade", "pip"], "Upgrading pip")
