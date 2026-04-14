@@ -32,6 +32,10 @@ ls data/
 
 The more data, the better the model!
 
+You can also add:
+- `.txt` plain text files
+- `.jsonl` chat/instruction data (recommended for better chat behavior)
+
 ### 3. Train the Model
 
 ```bash
@@ -266,6 +270,20 @@ Use `torch.quantization` for CPU optimization
 
 ### Fine-tuning
 Load checkpoint and train with new data
+
+### JSONL chat data (recommended)
+Put `.jsonl` files in `data/finetune/` (or `data/md/` if you want them in full training).
+Each line should be a JSON object in one of these formats:
+
+```json
+{"messages":[{"role":"system","content":"..."},{"role":"user","content":"..."},{"role":"assistant","content":"..."}]}
+```
+
+or:
+
+```json
+{"prompt":"...","completion":"..."}
+```
 
 ## Model Capabilities
 

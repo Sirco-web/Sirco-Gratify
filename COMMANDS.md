@@ -49,6 +49,7 @@ These commands are for training on NEW data after you already have a model:
 
 ```bash
 # Add conversation data to data/finetune/ folder first
+# Supported formats: .md, .txt, .jsonl (recommended)
 # Then fine-tune the model (uses lower learning rate)
 python src/finetune.py --epochs 5
 
@@ -90,6 +91,7 @@ data/
 ├── finetune/        ← Fine-tuning data (conversation data)
 │   ├── conversation_1.md
 │   ├── conversation_2.md
+│   ├── sample.jsonl  ← JSONL chat format (recommended)
 │   └── ... (add your conversation training data here)
 │
 └── README.md        ← Data folder documentation

@@ -163,28 +163,100 @@ class Trainer:
 
 
 def load_training_data(data_dir):
-    """Load all markdown files from data directory."""
-    md_folder = Path(data_dir) / "md"  # Look in data/md/ subfolder
-    if not md_folder.exists():
-        md_folder = Path(data_dir)  # Fallback to data/ root
-    
-    md_files = list(md_folder.glob("*.md"))
-    
-    if not md_files:
-        print(f"⚠️  No .md files found in {data_dir}")
-        print(f"   Add markdown files to {data_dir} to train the model.")
+    """Load training text from a directory.
+
+    Supported file types:
+    - .md: markdown/plain text
+    - .txt: plain text
+    - .jsonl: instruction/chat records (one JSON object per line)
+    """
+
+    def format_jsonl_record(obj: dict) -> str:
+        # Common formats:
+        # - {"text": "..."}
+        # - {"prompt": "...", "completion": "..."}
+        # - {"messages": [{"role":"system|user|assistant","content":"..."}]}
+        if isinstance(obj.get("text"), str):
+            return obj["text"].strip()
+
+        if isinstance(obj.get("prompt"), str) or isinstance(obj.get("completion"), str):
+            prompt = (obj.get("prompt") or "").strip()
+            completion = (obj.get("completion") or "").strip()
+            if prompt and completion:
+                return f"User: {prompt}\nAssistant: {completion}".strip()
+            return (prompt or completion).strip()
+
+        msgs = obj.get("messages")
+        if isinstance(msgs, list):
+            out_lines: list[str] = []
+            for m in msgs:
+                if not isinstance(m, dict):
+                    continue
+                role = (m.get("role") or "").strip().lower()
+                content = m.get("content")
+                if not isinstance(content, str):
+                    continue
+                content = content.strip()
+                if not content:
+                    continue
+                if role in {"system"}:
+                    out_lines.append(f"System: {content}")
+                elif role in {"user"}:
+                    out_lines.append(f"User: {content}")
+                elif role in {"assistant", "bot"}:
+                    out_lines.append(f"Assistant: {content}")
+                else:
+                    out_lines.append(content)
+            return "\n".join(out_lines).strip()
+
+        # Fallback: stringify unknown objects (but keep it stable).
+        return json.dumps(obj, ensure_ascii=False)
+
+    base = Path(data_dir)
+    md_folder = base / "md"  # prefer data/md/
+    source_dir = md_folder if md_folder.exists() else base
+
+    md_files = sorted(source_dir.glob("*.md"))
+    txt_files = sorted(source_dir.glob("*.txt"))
+    jsonl_files = sorted(source_dir.glob("*.jsonl"))
+
+    total_files = len(md_files) + len(txt_files) + len(jsonl_files)
+    if total_files == 0:
+        print(f"⚠️  No .md/.txt/.jsonl files found in {source_dir}")
+        print("   Add training files, then rerun training.")
         return None
-    
-    print(f"📂 Found {len(md_files)} markdown files")
-    
-    # Concatenate all files
-    all_text = ""
-    for md_file in md_files:
-        print(f"   - {md_file.name}")
-        with open(md_file, "r", encoding="utf-8") as f:
-            all_text += f.read() + "\n"
-    
-    return all_text
+
+    print(f"📂 Found {total_files} training files in {source_dir}")
+
+    chunks: list[str] = []
+
+    for p in md_files + txt_files:
+        print(f"   - {p.name}")
+        with open(p, "r", encoding="utf-8") as f:
+            chunks.append(f.read().strip())
+
+    for p in jsonl_files:
+        print(f"   - {p.name}")
+        num_records = 0
+        with open(p, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    obj = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if not isinstance(obj, dict):
+                    continue
+                formatted = format_jsonl_record(obj)
+                if formatted:
+                    chunks.append(formatted)
+                    num_records += 1
+        print(f"     records: {num_records}")
+
+    # Separate docs/conversations so the model learns boundaries.
+    return "\n\n---\n\n".join([c for c in chunks if c])
 
 
 def setup_training(args):
